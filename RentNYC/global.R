@@ -18,7 +18,7 @@ import <- function(beds, report) {
            value = "value",
            -c(1:3),
            na.rm = TRUE) %>%
-    mutate(., BR = beds, Month = gsub("\\.", "-", gsub("X", "", Month)))
+    mutate(., BR = beds, Month = ymd(paste0(substr(Month,2,100),".01")))
   return(df.in)
 }
 
@@ -52,32 +52,64 @@ inv <- inv.list$neighborhood
 perRoom <- function(x) {
   pr <- x %>%
     spread(., key = "BR", value = "value") %>%
-    mutate(.,
-           "add1" = OneBd - Studio,
-           "add2" = TwoBd - OneBd,
-           "add3p" = ThreePlusBd - TwoBd) %>% 
     arrange(., Month, Borough, areaName) %>% 
-    select(., Month, "Neighborhood" = areaName, Borough, Studio, OneBd, TwoBd, ThreePlusBd, "BdOne" = add1, "BdTwo" = add2, "BdThreePlus" = add3p)
+    mutate(.,
+           add1 = OneBd - Studio,
+           add2 = TwoBd - OneBd,
+           add3p = ThreePlusBd - TwoBd) %>% 
+    select(., Month, "Neighborhood" = areaName, Borough, 
+           Studio, OneBd, TwoBd, ThreePlusBd, 
+           "BdOne" = add1, "BdTwo" = add2, "BdThreePlus" = add3p) %>% 
+    gather(., key = "Rooms", value = "medRent", -c(1:3), na.rm = T)
   return(pr)
+}
+
+roomGroup <- function(x){
+  rent <- x %>% filter(., Rooms %in% c("Studio", "OneBd", "TwoBd", "ThreePlusBd"))
+  room <- x %>% filter(., Rooms %in% c("BdOne", "BdTwo", "BdThreePlus")) %>% 
+    mutate(.,
+           Rooms = recode(Rooms, 
+                        "BdOne" = "OneBd", 
+                        "BdTwo" = "TwoBd", 
+                        "BdThreePlus" = "ThreePlusBd"), 
+           addRent = medRent) %>% 
+    select(., -medRent)
+  
+  out <- left_join(rent, room)
+  
+  return(out)
 }
 
 med.pr <- perRoom(med)
 
-# 
-
+# Create variable of boroughs
+boroDex <- unique(med.pr[,"Borough"])
+nhDex <- unique(med.pr[,"Neighborhood"])
+roomDex <- c("Studio", "1BR", "2BR", "3BR+")
 
 # Create plot of per room rent rates over time which can be filtered by boro, scope, and time range
+rentTrend <- function(input, boro, nh, output){
+  byBoro <- input %>% 
+    filter(., Borough==boro, 
+           Neighborhood %in% nh,
+           )
+  return(byBoro)    
+}
 
-Line4 <-  gvisLineChart(med.pr, "Month", c("Studio","OneBd"), 
-                        options=list(gvis.editor="Edit me!"))
+# boroTrend <- rentTrend(med.pr, "Queens", c("Astoria", "Forest Hills"),0) %>% 
+#   mutate(., 
+#          quarter = yq(quarter(Month, with_year = T)), 
+#          year = year(Month)) %>% 
+#   group_by(., year, Neighborhood) %>% 
+#   summarise(., OneBd = mean(OneBd), na.rm = TRUE)
+# head(boroTrend)
 
-plot(Line4)
+# ggplot(boroTrend, mapping = aes(x = year, y = OneBd)) + 
+#   geom_point(aes(color = Neighborhood)) +
+#   geom_smooth(aes(color = Neighborhood), method = "lm", se = F) + 
+#   geom_line(aes(color = Neighborhood))
 
 
-
-# Create variable of boroughs
-  boro <- unique(med.pr[,"Borough"])
-  
 
 
 

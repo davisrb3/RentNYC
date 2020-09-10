@@ -7,7 +7,11 @@ shinyUI(dashboardPage(
     sidebarMenu(
       menuItem("Trend", tabName = "trend", icon = icon("calendar"))
     ),
-    selectizeInput("selected", "Select Borough to Display", boro)
+    selectizeInput("boro", "Select Borough to Display", boroDex),
+    dateRangeInput("dates", label = "Date range", start = min(med.pr), end = max(med.pr)),
+    checkboxGroupInput("nhDex", label = "Checkbox group", 
+                       choices = list("Choice 1" = 1, "Choice 2" = 2, "Choice 3" = 3),
+                       selected = 1)
   ),
   dashboardBody(
     tabItems(
