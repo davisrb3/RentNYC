@@ -11,13 +11,9 @@ library(lubridate)
 
 # Helper function to import one table + cleanup and format
 import <- function(beds, report) {
-  path = paste0("../data/", beds, "/", report, "_", beds, ".csv")
+  path = paste0("./data/", beds, "/", report, "_", beds, ".csv")
   df.in <- read.csv(path) %>%
-    gather(.,
-           key = "Month",
-           value = "value",
-           -c(1:3),
-           na.rm = TRUE) %>%
+    gather(., key = "Month", value = "value", -c(1:3), na.rm = TRUE) %>%
     mutate(., BR = beds, Month = ymd(paste0(substr(Month,2,100),".01")))
   return(df.in)
 }
@@ -60,7 +56,7 @@ perRoom <- function(x) {
     select(., Month, "Neighborhood" = areaName, Borough, 
            Studio, OneBd, TwoBd, ThreePlusBd, 
            "BdOne" = add1, "BdTwo" = add2, "BdThreePlus" = add3p) %>% 
-    gather(., key = "Rooms", value = "medRent", -c(1:3), na.rm = T)
+    gather(., key = Rooms, value = medRent, -c(1:3), na.rm = T)
   return(pr)
 }
 
@@ -83,9 +79,9 @@ roomGroup <- function(x){
 med.pr <- perRoom(med)
 
 # Create variable of boroughs
-boroDex <- unique(med.pr[,"Borough"])
-nhDex <- unique(med.pr[,"Neighborhood"])
-roomDex <- c("Studio", "1BR", "2BR", "3BR+")
+boroList <- unique(arrange(med.pr,Borough)[,"Borough"])
+#nhList <- unique(arrange(med.pr,Neighborhood)[,"Neighborhood"])
+roomList <- c("Studio", "1BR", "2BR", "3BR+")
 
 # Create plot of per room rent rates over time which can be filtered by boro, scope, and time range
 rentTrend <- function(input, boro, nh, output){

@@ -5,18 +5,42 @@ shinyUI(dashboardPage(
   dashboardHeader(title = "NYC Rent Explored"),
   dashboardSidebar(
     sidebarMenu(
-      menuItem("Trend", tabName = "trend", icon = icon("calendar"))
-    ),
-    selectizeInput("boro", "Select Borough to Display", boroDex),
-    dateRangeInput("dates", label = "Date range", start = min(med.pr), end = max(med.pr)),
-    checkboxGroupInput("nhDex", label = "Checkbox group", 
-                       choices = list("Choice 1" = 1, "Choice 2" = 2, "Choice 3" = 3),
-                       selected = 1)
-  ),
-  dashboardBody(
-    tabItems(
-      tabItem(tabName = "trend",
-              "to be replaced with trend by room count and per room")
+      menuItem("trend", tabName = "Trend", icon = icon("calendar")),
+      menuItem("dt", tabName = "Data", icon = icon("star")),
+      selectizeInput("boroPick", "Select Borough to Display", boroList),
+      dateRangeInput(
+        "datePick",
+        label = "Date Range",
+        start = min(med.pr[, "Month"]),
+        end = max(med.pr[, "Month"]),
+        min = min(med.pr[, "Month"]),
+        max = max(med.pr[, "Month"])
+      ),
+      checkboxGroupInput(inputId = "nhPick", label = "Neighborhoods", choices = NULL)
     )
-  )
+  ),
+  dashboardBody(tabItems(
+    tabItem(tabName = "Trend",
+            fluidRow(
+              box(htmlOutput("trend")),
+              
+              
+              
+              box(
+                
+                
+                checkboxGroupInput("inCheckboxGroup", "Input checkbox",
+                                     c("Item A", "Item B", "Item C")),
+                  checkboxGroupInput("inCheckboxGroup2", "Input checkbox 2",
+                                     c("Item A", "Item B", "Item C")))
+              
+              
+              
+              )
+            ),
+    tabItem(tabName = "DataTable",
+            fluidRow(box(
+              DT::dataTableOutput("table"), width = 12
+            )))
+  ))
 ))
