@@ -69,7 +69,8 @@ roomGroup <- function(x){
                         "BdTwo" = "TwoBd", 
                         "BdThreePlus" = "ThreePlusBd"), 
            addRent = medRent) %>% 
-    select(., -medRent)
+    select(., -medRent) %>% 
+    arrange(.,Month, asc(Borough), asc(Neighborhood), Rooms)
   
   out <- left_join(rent, room)
   
@@ -79,9 +80,9 @@ roomGroup <- function(x){
 med.pr <- perRoom(med)
 
 # Create variable of boroughs
-boroList <- unique(arrange(med.pr,Borough)[,"Borough"])
-#nhList <- unique(arrange(med.pr,Neighborhood)[,"Neighborhood"])
-roomList <- c("Studio", "1BR", "2BR", "3BR+")
+boroList1 <- unique(arrange(med.pr,Borough)[,"Borough"])
+nhList1 <- unique(arrange(med.pr,Neighborhood)[,"Neighborhood"])
+roomList1 <- c("Studio", "1BR", "2BR", "3BR+")
 
 # Create plot of per room rent rates over time which can be filtered by boro, scope, and time range
 rentTrend <- function(input, boro, nh, output){
@@ -91,6 +92,9 @@ rentTrend <- function(input, boro, nh, output){
            )
   return(byBoro)    
 }
+
+write.csv(med.pr,file = "medianAskingRent.csv", row.names = F)
+
 
 # boroTrend <- rentTrend(med.pr, "Queens", c("Astoria", "Forest Hills"),0) %>% 
 #   mutate(., 
